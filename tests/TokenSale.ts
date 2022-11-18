@@ -107,8 +107,8 @@ describe("NFT Shop", async () => {
       const NFT_ID = 42;
       let TokenBalanceBefore: BigNumber;
       beforeEach(async =>{
-        const nftOwner = await nftContract.ownerOf(NFT_ID);
-        console.log(nftOwner)
+        //const nftOwner = await nftContract.ownerOf(NFT_ID);
+        //console.log(nftOwner) fails as it's not yet minted
         TokenBalanceBefore = await paymentTokenContract.balanceOf(accounts[1].address);
         const allowTx = await paymentTokenContract.connect(accounts[1]).approve(tokenSaleContract.address, NFT_PRICE);
         await allowTx.wait();
@@ -119,7 +119,9 @@ describe("NFT Shop", async () => {
         const tokenBalanceAfter = await paymentTokenContract.balanceOf(accounts[1].address);
       });
       it("give the right NFT", async () => {
-        throw new Error("Not implemented");
+        const nftOwner = await nftContract.ownerOf(NFT_ID);
+        expect(nftOwner).to.eq()
+        
       });
   
       it("updates the owner account correctly", async () => {
