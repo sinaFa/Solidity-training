@@ -28,7 +28,9 @@ describe("Basic tests for understanding ERC20", async () => {
       const mintTx = await erc20TokenContrat.mint(accounts[0].address, 10);
       await mintTx.wait();
       //We do the transfer and we expect the Event Transfer (defined in IERC20 interface) that take parameters : 1. from 2. to 3. value
-      await expect(erc20TokenContrat.transfer(accounts[1].address,1)).to.emit(erc20TokenContrat, "Transfer").withArgs(accounts[0].address,accounts[1].address,3);
+      await expect(erc20TokenContrat.transfer(accounts[1].address,1))
+      .to.emit(erc20TokenContrat, "Transfer")
+      .withArgs(accounts[0].address,accounts[1].address,1);
       
     });
 });

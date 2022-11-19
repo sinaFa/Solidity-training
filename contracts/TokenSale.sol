@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+
+// We implement an interface to make external calls
 interface IMyERC20Token{
     function mint(address to, uint256 amount) external;
     function burnFrom(address to, uint256 amount) external;
@@ -37,6 +39,7 @@ contract TokenSale {
 
     }
 
+    // @dev: At this is reveing tokens and not ETH, we don't need to put it as payable
     function burnTokens(uint256 amount) external {
         paymentToken.burnFrom(msg.sender,amount);
         payable(msg.sender).transfer(amount * ratio);
@@ -44,15 +47,24 @@ contract TokenSale {
     }
 
     function purchaseNFT(uint256 tokenId) external{
-        paymentToken.transferFrom(msg.sender, address(this),price);
-        nftContract.safeMint(msg.sender, tokenId);
-        ownerPool += price /2;
+        paymentToken.transferFrom(msg.sender, address(this), price);
+
+        uint256 ownerShare = price / 2;
+        ownerPool += ownerShare;
         // if ownerpool rounds down, publicPool rounds up
-        publicPool += price - ownerPool;
+        publicPool += price - ownerShare;
+        
+        // if the token id already exists, it's going to be reverted automatically  
+        nftContract.safeMint(msg.sender, tokenId);
     }
 
-    function burnNFT(uint256 tokenId) external{}
+    function burnNFT(uint256 tokenId) external{
+        nftContract.burn(tokenId);
+        payable(msg.sender).transfer(price);
+    }
 
-    function ownerWithdraw(uint256 tokenId) external{}
+    function ownerWithdraw(uint256 tokenId) external{
+
+    }
 
 } 

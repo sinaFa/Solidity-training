@@ -1,17 +1,80 @@
 import { ethers } from "hardhat";
-
-const PROPOSALS = ["Proposal 1", "Proposal 2", "Proposal 3"];
+import * as dotenv from "dotenv";
+import {MyERC20__factory} from "../typechain-types"
+dotenv.config();
 
 async function main() {
-  console.log("Deploying Ballot contract");
-  console.log("Proposals: ");
-  PROPOSALS.forEach((element, index) => {
-    console.log(`Proposal N. ${index + 1}: ${element}`);
-  });
-  // TODO
+  // This returns a list of 20 wallets for you to play with. Always the same
+  const accounts = await ethers.getSigners()
+
+  //const erc20TokenFactory = await ethers.getContractFactory("MyERC20")
+  const erc20TokenFactory = new MyERC20__factory(accounts[0])
+  const erc20TokenContrat = await erc20TokenFactory.deploy()
+  await erc20TokenContrat.deployed()
+
+  console.log(`Contract deployed at address ${erc20TokenContrat.address}`)
+
+  const totalSupply = await erc20TokenContrat.totalSupply();
+  console.log(`The total supply of this contract is  ${totalSupply}`)
+
+  const mintTx = await erc20TokenContrat.mint(accounts[0].address, 10);
+  await mintTx.wait();
+
+  const totalSupplyAfterMint = await erc20TokenContrat.totalSupply();
+  console.log(`The total supply of this contract after minting is  ${totalSupplyAfterMint}`)
+  // By default just the owner can mint, buy you can give access to other wallets to mint
+  //erc20TokenContrat.grantRole()
+
+  const balanceOfAccount0 = await erc20TokenContrat.balanceOf(accounts[0].address)
+
+  console.log(`The balance of Account 0  (address: ${accounts[0].address}) in this contract is ${balanceOfAccount0} before the transfer`);
+
+
+  //const balanceOfAccount1 = await erc20TokenContrat.balanceOf(accounts[1].address);
+
+  //console.log(`The balance of Account 1  (address: ${accounts[1].address})
+  // in this contract is ${balanceOfAccount1} before the transfer`)
+
+
+  // We transfer some money from account 0 to account 1
+  console.log(`Now let's transfer some money to account 1 with address: ${accounts[1].address}`)
+  const transferTx = await erc20TokenContrat.transfer(accounts[1].address,1)
+  await transferTx.wait();
+
+  const balanceOfAccount0After = await erc20TokenContrat.balanceOf(accounts[0].address)
+
+
+  console.log(`The balance of Account 0 in this contract is ${balanceOfAccount0After} after the transfer`)
+
+  const balanceOfAccount1 = await erc20TokenContrat.balanceOf(accounts[1].address)
+  console.log(`The balance of Account 1 in this contract is ${balanceOfAccount1} after the transfer`)
+
+  const balanceOfAccount2 = await erc20TokenContrat.balanceOf(accounts[19].address)
+  console.log(`The balance of Account 2 in this contract is ${balanceOfAccount2} after the transfer`)
+
+
+
 }
 
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+
+
+// To run
+
+// yarn hardhat clean
+// yarn hardhat compile
+
+//yarn hardhat run scripts/Deployment_ERC20.ts
+
+/* Output:
+Contract deployed at address 0x5FbDB2315678afecb367f032d93F642f64180aa3
+The total supply of this contract is  0
+The total supply of this contract after minting is  10
+The balance of Account 0  (address: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266) in this contract is 10 before the transfer
+Now let's transfer some money to account 1 with address: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+The balance of Account 0 in this contract is 9 after the transfer
+The balance of Account 1 in this contract is 1 after the transfer
+The balance of Account 2 in this contract is 0 after the transfer */
